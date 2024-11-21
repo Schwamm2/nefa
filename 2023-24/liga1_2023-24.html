@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liga 1 - Saison 2023/2024</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .tabs { display: flex; cursor: pointer; margin-bottom: 10px; }
+        .tab { padding: 10px; background: #f4f4f4; border: 1px solid #ddd; margin-right: 5px; }
+        .tab.active { background: #ddd; font-weight: bold; }
+        .table-container { display: none; }
+        .table-container.active { display: block; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Liga 1 - Saison 2023/2024</h1>
+    </header>
+
+    <div class="tabs" id="tabs">
+        <!-- Reiter werden hier dynamisch generiert -->
+    </div>
+
+    <div id="tables">
+        <!-- Tabellen werden hier dynamisch eingefügt -->
+    </div>
+
+    <script>
+        const url = 'exel/Liga1_2023-24.xlsx'; // Pfad zur Excel-Datei
+        const tabsContainer = document.getElementById('tabs');
+        const tablesContainer = document.getElementById('tables');
+
+        // Excel-Datei laden und Inhalte anzeigen
+        fetch(url)
+            .then(response => response.arrayBuffer())
+            .then(data => {
+                const workbook = XLSX.read(data, { type: 'array' });
+                workbook.SheetNames.forEach((sheetName, index) => {
+                    // Reiter hinzufügen
+                    const tab = document.createElement('div');
+                    tab.className = 'tab';
+                    tab.textContent = sheetName;
+                    if (index === 0) tab.classList.add('active'); // Der erste Reiter ist standardmäßig aktiv
+                    tabsContainer.appendChild(tab);
+
+                    // Tabelle erstellen und einfügen
+                    const tableContainer = document.createElement('div');
+                    tableContainer.className = 'table-container';
+                    if (index === 0) tableContainer.classList.add('active'); // Die erste Tabelle ist standardmäßig sichtbar
+                    const sheet = workbook.Sheets[sheetName];
+                    const html = XLSX.utils.sheet_to_html(sheet);
+                    tableContainer.innerHTML = html;
+                    tablesContainer.appendChild(tableContainer);
+
+                    // Klick-Event für den Reiter
+                    tab.addEventListener('click', () => {
+                        // Alle Reiter deaktivieren
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        // Aktiven Reiter markieren
+                        tab.classList.add('active');
+
+                        // Alle Tabellen ausblenden
+                        document.querySelectorAll('.table-container').forEach(tc => tc.classList.remove('active'));
+                        // Aktuelle Tabelle anzeigen
+                        tableContainer.classList.add('active');
+                    });
+                });
+            })
+            .catch(error => {
+                console.error("Fehler beim Laden der Excel-Datei:", error);
+            });
+    </script>
+</body>
+</html>
